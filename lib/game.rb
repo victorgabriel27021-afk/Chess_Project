@@ -21,13 +21,24 @@ class Game
   def play
     loop do
       @board.display
-      puts "#{@current_player.color}, sua vez!"
 
-      print "Digite o movimento (ex: e2 e4): "
+      puts "#{@current_player.color}, sua vez!"
+      print "Digite o movimento (ex: e2 e4) ou 'quit' para sair: "
 
       input = gets&.chomp
 
-      if input.nil? || input.split(" ").length != 2
+       if input.nil?
+        puts "Entrada inválida!"
+        next
+      end
+
+      if ["quit", "sair", "exit"].include?(input.downcase)
+        puts "Jogo encerrado pelo jogador."
+        break
+      end
+
+
+      if input.split(" ").length != 2
         puts "Entrada inválida! Use o formato: e2 e4"
         next
       end
@@ -39,8 +50,7 @@ class Game
 
       piece = @board.piece_at(from_coord)
 
-      # 🔥 validações do jogo
-      if piece.nil? || piece == "."
+      if piece.nil?
         puts "Não existe peça nessa posição!"
         next
       end
@@ -56,7 +66,18 @@ class Game
       end
 
       @board.move_piece(from_coord, to_coord)
-      piece.mark_moved if piece.respond_to?(:mark_moved)
+
+      if @board.in_check?(@current_player.color)
+        puts "⚠️ XEQUE!"
+      end
+
+      if @board.checkmate?(@current_player.color)
+        @board.display
+        puts "💀 XEQUE-MATE!"
+        puts "#{@current_player.color} perdeu o jogo!"
+        break
+      end
+
       switch_player
     end
   end
